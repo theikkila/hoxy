@@ -1,11 +1,11 @@
 {
   "name": "hoxy",
-  "version": "3.2.2",
+  "version": "3.3.0",
   "author": "Greg Reimer <gregreimer@gmail.com>",
   "description": "Web-hacking proxy API for node",
   "repository": {
     "type": "git",
-    "url": "git@github.com:greim/hoxy.git"
+    "url": "git@github.com:disrvptor/hoxy.git"
   },
   "main": "./lib/main",
   "scripts": {
