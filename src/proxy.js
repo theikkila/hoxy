@@ -15,6 +15,7 @@ import { SNISpoofer } from './sni-spoofer'
 import net from 'net'
 import https from 'https'
 import { ThrottleGroup } from 'stream-throttle'
+import _ from 'lodash'
 
 // TODO: test all five for both requet and response
 let asHandlers = {
@@ -116,8 +117,33 @@ export default class Proxy extends EventEmitter {
 
     if (opts.reverse) {
       let reverse = opts.reverse
-      if (!/^https?:\/\/[^:]+(:\d+)?$/.test(reverse)) {
-        throw new Error(`invalid value for reverse: "${opts.reverse}"`)
+
+      if ( !_.isMap(reverse) ) {
+        // Old behavior - Let's make this into a map
+        reverse = new Map();
+        reverse.set(/.*/, opts.reverse);
+        opts.reverse = reverse;
+      }
+
+      // New behavior, test each Path Regex -> URL pair
+      // Note: we use a map because it preserves order of keys
+      if ( reverse.size <= 0 ) {
+        throw new Error('at least one reverse path must be defined')
+      }
+      var foundDefault = false
+      reverse.forEach((value, key, map) => {
+        if ( String(key) === "/.*/" ) {
+          foundDefault = true
+        }
+        if ( ! _.isRegExp(key) ) {
+          throw new Error(`invalid RegExp for key: "${key}" for reverse "${value}"`)
+        }
+        if (!/^https?:\/\/[^:]+(:\d+)?$/.test(value)) {
+          throw new Error(`invalid value for reverse: "${value}" for path "${key}"`)
+        }
+      });
+      if ( !foundDefault ) {
+        throw Error('no default path of "/.*/" was defined in the reverse mapping')
       }
       this._reverse = reverse
     }
@@ -159,7 +185,24 @@ export default class Proxy extends EventEmitter {
       cycle.on('log', log => this.emit('log', log))
 
       co.call(this, function*() {
-        req._setHttpSource(fromClient, opts.reverse)
+        // Reverse is a Map of paths to URLs now
+        var reverse = null;
+        if ( this._reverse ) {
+          this._reverse.forEach((value, key, map) => {
+            // console.log(`Testing ${key} against ${fromClient.url} -> ${key.test(fromClient.url)}`)
+            if ( null == reverse && key.test(fromClient.url) ) {
+              reverse = value;
+            }
+          });
+          if ( null == reverse ) {
+            this.emit('log', {
+              level: 'error',
+              message: `no path found that matches "${fromClient.url}"`
+            })
+            return
+          }
+        }
+        req._setHttpSource(fromClient, reverse)
         try { yield this._runIntercepts('request', cycle) }
         catch(ex) { this._emitError(ex, 'request') }
         let partiallyFulfilledRequest = yield cycle._sendToServer()
@@ -255,7 +298,7 @@ export default class Proxy extends EventEmitter {
       message = 'https ' + message
     }
     if (this._reverse) {
-      message += ', reverse ' + this._reverse
+      message += ', reverse ' + JSON.stringify(this._reverse)
     }
     this.emit('log', {
       level: 'info',

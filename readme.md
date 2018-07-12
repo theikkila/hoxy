@@ -4,7 +4,7 @@ Hoxy is an HTTP hacking tool for JavaScript programmers.
 
 ## Full Documentation
 
-http://greim.github.io/hoxy/
+http://disrvptor.github.io/hoxy/
 
 ## Example
 
@@ -42,6 +42,7 @@ Notable changes:
 
 ## Release notes:
 
+* **3.3.0** Updated dependencies and added miltiple reverese support.
 * **3.2.2** Merged [PR #95](https://github.com/greim/hoxy/pull/95). Thanks [devjerry](https://github.com/devjerry).
 * **3.2.1** Fixed test failures regarding `content-length` and `transfer-encoding` headers.
 * **3.2.0** Better error handling. Added `query` getter/setter to request.
