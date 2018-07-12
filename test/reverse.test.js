@@ -69,7 +69,7 @@ describe('reverse', function() {
     })
   })
 
-  it('should accept a valid reverse proxy map', () => {
+  it('should accept a valid default reverse proxy map', () => {
     var reverseMap = new Map();
     reverseMap.set(/.*/, 'http://example.com')
     let proxy = new Proxy({
@@ -98,6 +98,16 @@ describe('reverse', function() {
   it('should reject a reverse proxy map with no default path', () => {
     var reverseMap = new Map();
     reverseMap.set(/\/my-path\/.*/, 'http://example2.com')
+    assert.throws(() => {
+      let proxy = new Proxy({
+        reverse: reverseMap,
+      })
+    })
+  })
+
+  it('should reject a reverse proxy map without a RegExp path', () => {
+    var reverseMap = new Map();
+    reverseMap.set("/\/.*/", 'http://example2.com')
     assert.throws(() => {
       let proxy = new Proxy({
         reverse: reverseMap,

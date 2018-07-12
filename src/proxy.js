@@ -135,8 +135,11 @@ export default class Proxy extends EventEmitter {
         if ( String(key) === "/.*/" ) {
           foundDefault = true
         }
+        if ( ! _.isRegExp(key) ) {
+          throw new Error(`invalid RegExp for key: "${key}" for reverse "${value}"`)
+        }
         if (!/^https?:\/\/[^:]+(:\d+)?$/.test(value)) {
-          throw new Error(`invalid value for reverse: "${value}" for path ${key}`)
+          throw new Error(`invalid value for reverse: "${value}" for path "${key}"`)
         }
       });
       if ( !foundDefault ) {
