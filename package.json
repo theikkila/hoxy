@@ -1,6 +1,6 @@
 {
-  "name": "@disrvptor/hoxy",
-  "version": "3.3.0",
+  "name": "hoxy",
+  "version": "3.3.2",
   "author": "Greg Reimer <gregreimer@gmail.com>",
   "contributors": [
     "Guy Pascarella <guy.pascarella@gmail.com"
